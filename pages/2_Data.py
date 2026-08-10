@@ -18,7 +18,7 @@ df = clean_data(load_data())
 st.title("📋 Raw Data")
 
 st.caption(
-    "View and filter all recorded EMS calls."
+    "view all data"
 )
 
 

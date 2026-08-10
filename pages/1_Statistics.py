@@ -17,7 +17,7 @@ st.set_page_config(
 df = clean_data(load_data())
 
 st.title("📊 EMS Statistics")
-st.caption("Explore your EMS call trends and analytics.")
+st.caption("noob statistics")
 
 show_call_analytics(df)
 
