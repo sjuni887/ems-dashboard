@@ -1,3 +1,14 @@
+import sys
+import os
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
+
 import pandas as pd
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
@@ -11,6 +22,7 @@ from data.cleaning import clean_data
 # ------------------------------------
 
 df = clean_data(load_data())
+
 
 # ------------------------------------
 # Load existing cache
@@ -31,43 +43,63 @@ except FileNotFoundError:
         ]
     )
 
+
 # ------------------------------------
 # Find locations not yet geocoded
 # ------------------------------------
 
-existing_locations = set(cache_df["Location"])
+existing_locations = set(
+    cache_df["Location"]
+)
 
 new_locations = sorted(
-    set(df["Call location"].dropna())
+    set(
+        df["Call location"]
+        .dropna()
+        .astype(str)
+        .str.strip()
+    )
     - existing_locations
 )
 
-print(f"{len(new_locations)} new locations found.")
+print(
+    f"{len(new_locations)} new locations found."
+)
+
 
 # ------------------------------------
 # Initialise geocoder
 # ------------------------------------
 
-geolocator = Nominatim(user_agent="ems_dashboard")
+geolocator = Nominatim(
+    user_agent="ems_heatmap"
+)
 
 geocode = RateLimiter(
     geolocator.geocode,
     min_delay_seconds=1
 )
 
+
 # ------------------------------------
-# Geocode
+# Geocode locations
 # ------------------------------------
 
 new_rows = []
 
 for location in new_locations:
 
-    result = geocode(location + ", Singapore")
+    print(f"Searching: {location}")
+
+    result = geocode(
+        location + ", Singapore"
+    )
 
     if result:
 
-        print(f"✓ {location}")
+        print(
+            f"✓ {location} -> {result.address}"
+        )
 
         new_rows.append({
             "Location": location,
@@ -77,7 +109,10 @@ for location in new_locations:
 
     else:
 
-        print(f"✗ {location}")
+        print(
+            f"✗ Could not find: {location}"
+        )
+
 
 # ------------------------------------
 # Save updated cache
@@ -85,10 +120,15 @@ for location in new_locations:
 
 if new_rows:
 
-    new_df = pd.DataFrame(new_rows)
+    new_df = pd.DataFrame(
+        new_rows
+    )
 
     cache_df = pd.concat(
-        [cache_df, new_df],
+        [
+            cache_df,
+            new_df
+        ],
         ignore_index=True
     )
 
@@ -97,8 +137,12 @@ if new_rows:
         index=False
     )
 
-    print(f"Saved {len(new_rows)} new locations.")
+    print(
+        f"Saved {len(new_rows)} new locations."
+    )
 
 else:
 
-    print("No new locations.")
+    print(
+        "No new locations."
+    )

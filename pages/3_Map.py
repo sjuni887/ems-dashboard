@@ -164,8 +164,8 @@ st.divider()
 
 normal_tab, heatmap_tab = st.tabs(
     [
-        "📍 Normal Map",
-        "🔥 Heatmap"
+        "Map View",
+        "Heatmap"
     ]
 )
 
@@ -223,7 +223,7 @@ with normal_tab:
 
 with heatmap_tab:
 
-    st.subheader("🔥 EMS Call Density")
+    st.subheader("EMS Call Density")
 
     heatmap_fig = px.density_map(
         filtered_map_df,

@@ -4,3 +4,5 @@ plotly
 gspread 
 google-auth
 openpyxl
+streamlit-folium
+folium

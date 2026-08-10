@@ -1,11 +1,9 @@
 import streamlit as st
 
-from data.sheets import load_data
-from data.cleaning import clean_data
 
-# ----------------------------------------------------
-# Page Configuration
-# ----------------------------------------------------
+# ====================================================
+# PAGE CONFIGURATION
+# ====================================================
 
 st.set_page_config(
     page_title="EMS Dashboard",
@@ -13,74 +11,52 @@ st.set_page_config(
     layout="wide"
 )
 
-# ----------------------------------------------------
-# Load Data
-# ----------------------------------------------------
 
-df = clean_data(load_data())
+# ====================================================
+# NAVIGATION
+# ====================================================
 
-# ----------------------------------------------------
-# Statistics
-# ----------------------------------------------------
+pages = {
+    "Home": [
+        st.Page(
+            "pages/0_Homepage.py",
+            title="Homepage",
+            icon="🏠"
+        )
+    ],
 
-total_calls = len(df)
+    "Analytics": [
+        st.Page(
+            "pages/1_Statistics.py",
+            title="EMS Statistics",
+            icon="📊"
+        )
+    ],
 
-average_age = round(df["Patient Age"].mean(), 1)
+    "Data": [
+        st.Page(
+            "pages/2_Data.py",
+            title="Data",
+            icon="📋"
+        )
+    ],
 
-average_duration = round(df["Call Duration"].mean(), 1)
+    "Map": [
+        st.Page(
+            "pages/3_Map.py",
+            title="Map",
+            icon="🗺️"
 
-average_difficulty = round(df["How difficult was this call?"].mean(), 1)
-
-# ----------------------------------------------------
-# Title
-# ----------------------------------------------------
-
-st.title("🚑 EMS Dashboard")
-st.caption("Personal EMS Call Analytics Dashboard")
-
-# ----------------------------------------------------
-# Summary
-# ----------------------------------------------------
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.metric("Total Calls", total_calls)
-
-with col2:
-    st.metric("Average Patient Age", average_age)
-
-with col3:
-    st.metric("Average Duration", f"{average_duration} mins")
-
-with col4:
-    st.metric("Average Difficulty", f"{average_difficulty}/5")
-
-st.divider()
-
-# ----------------------------------------------------
-# Recent Calls
-# ----------------------------------------------------
-
-st.subheader("📋 Recent Calls")
-
-recent_calls = (
-    df[
-        [
-            "Date",
-            "Call start time",
-            "Call Type",
-            "Starting PAC status",
-            "Ending PAC Status",
-            "Patient Age",
-            "Call Duration",
-        ]
+        )
     ]
-    .sort_values("Date", ascending=False)
-)
 
-st.dataframe(
-    recent_calls,
-    use_container_width=True,
-    hide_index=True,
-)
+}
+
+
+# ====================================================
+# RUN APP
+# ====================================================
+
+pg = st.navigation(pages)
+
+pg.run()
