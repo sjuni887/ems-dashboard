@@ -50,40 +50,51 @@ def show_operations_analytics(df):
     )
 
 
+
     # ----------------------------------------------------
-    # Conveyed vs Not Conveyed
+    # Reason for Non-Conveyance
     # ----------------------------------------------------
 
-    conveyance_df = (
+    non_conveyance_df = (
         df["If not conveyed, what was the reason?"]
-        .fillna("Conveyed")
+        .dropna()
     )
 
-    conveyance_df = (
-        conveyance_df
-        .replace("", "Conveyed")
+    # Remove entries that are not actual non-conveyance reasons
+    non_conveyance_df = non_conveyance_df[
+        ~non_conveyance_df.isin([
+            "Not Applicable",
+            "Conveyed",
+            ""
+        ])
+    ]
+
+    non_conveyance_df = (
+        non_conveyance_df
         .value_counts()
         .reset_index()
     )
 
-    conveyance_df.columns = [
-        "Status",
+    non_conveyance_df.columns = [
+        "Reason",
         "Count"
     ]
 
-    conveyance_fig = px.pie(
-        conveyance_df,
+    non_conveyance_fig = px.pie(
+        non_conveyance_df,
         values="Count",
-        names="Status",
+        names="Reason",
         hole=0.5,
-        title="Conveyed vs Not Conveyed"
+        title="Reason for Non-Conveyance"
     )
 
     right.plotly_chart(
-        conveyance_fig,
+        non_conveyance_fig,
         use_container_width=True,
-        key="conveyance_chart"
+        key="non_conveyance_chart"
     )
+
+
 
 
     # ====================================================

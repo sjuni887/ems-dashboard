@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from data.sheets import load_data
 from data.cleaning import clean_data
@@ -12,15 +13,73 @@ df = clean_data(load_data())
 
 
 # ====================================================
-# STATISTICS
+# DATE PREPARATION
 # ====================================================
 
-total_calls = len(df)
+df["Date"] = pd.to_datetime(
+    df["Date"],
+    errors="coerce"
+)
 
-average_age = round(
-    df["Patient Age"].mean(),
+today = pd.Timestamp.today().normalize()
+
+
+# ====================================================
+# TODAY'S CALLS
+# ====================================================
+
+today_df = df[
+    df["Date"].dt.normalize() == today
+].copy()
+
+calls_today = len(today_df)
+
+
+# ====================================================
+# AVERAGE CALLS PER DAY
+# ====================================================
+
+average_calls_per_day = (
+    df.groupby(
+        df["Date"].dt.date
+    )
+    .size()
+    .mean()
+)
+
+average_calls_per_day = round(
+    average_calls_per_day,
     1
 )
+
+
+# ====================================================
+# DIFFERENCE FROM DAILY AVERAGE
+# ====================================================
+
+calls_difference = round(
+    calls_today - average_calls_per_day
+)
+
+
+# ====================================================
+# PATIENTS CONVEYED TODAY
+# ====================================================
+
+patients_conveyed_today = (
+    today_df[
+        "If not conveyed, what was the reason?"
+    ]
+    .fillna("")
+    .str.strip()
+    .eq("Not Applicable")
+    .sum()
+)
+
+
+# ====================================================
+# OTHER STATISTICS
+# ====================================================
 
 average_duration = round(
     df["Call Duration"].mean(),
@@ -51,21 +110,60 @@ st.caption(
 col1, col2, col3, col4 = st.columns(4)
 
 
+# ----------------------------------------------------
+# Calls Today
+# ----------------------------------------------------
+
 with col1:
 
     st.metric(
-        "Total Calls",
-        total_calls
+        "Calls Today",
+        calls_today
     )
 
+    if calls_difference > 0:
+
+        st.markdown(
+            f"<small style='color:red;'>"
+            f"▲ {calls_difference} above daily average"
+            f"</small>",
+            unsafe_allow_html=True
+        )
+
+    elif calls_difference < 0:
+
+        st.markdown(
+            f"<small style='color:green;'>"
+            f"▼ {abs(calls_difference)} below daily average"
+            f"</small>",
+            unsafe_allow_html=True
+        )
+
+    else:
+
+        st.markdown(
+            "<small>"
+            "Exactly at daily average"
+            "</small>",
+            unsafe_allow_html=True
+        )
+
+
+# ----------------------------------------------------
+# Patients Conveyed Today
+# ----------------------------------------------------
 
 with col2:
 
     st.metric(
-        "Average Patient Age",
-        average_age
+        "Patients Conveyed Today",
+        patients_conveyed_today
     )
 
+
+# ----------------------------------------------------
+# Average Duration
+# ----------------------------------------------------
 
 with col3:
 
@@ -74,6 +172,10 @@ with col3:
         f"{average_duration} mins"
     )
 
+
+# ----------------------------------------------------
+# Average Difficulty
+# ----------------------------------------------------
 
 with col4:
 
@@ -113,6 +215,7 @@ recent_calls = (
     )
     .head(10)
 )
+
 
 st.dataframe(
     recent_calls,
