@@ -169,3 +169,31 @@ def show_call_analytics(df):
         use_container_width=True,
         key="duration_by_day_chart"
     )
+
+    call_type_counts = (
+    df["Call Type"]
+    .value_counts()
+    .reset_index()
+)
+
+    call_type_counts.columns = [
+    "Call Type",
+    "Calls"
+    ]
+
+    fig = px.pie(
+        call_type_counts,
+        names="Call Type",
+        values="Calls",
+        hole=0.4
+    )
+
+    fig.update_layout(
+        title="Calls by Type"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key="call_type_pie"
+    )
