@@ -54,7 +54,7 @@ mapped_df = map_df.dropna(
 st.title("🗺️ EMS Call Map")
 
 st.caption(
-    "Explore the geographical distribution of EMS calls."
+    "where yo calls at"
 )
 
 
