@@ -32,41 +32,36 @@ today_df = df[
     df["Date"].dt.normalize() == today
 ].copy()
 
-calls_today = len(today_df)
+# ====================================================
+# CALLS THIS SHIFT
+# ====================================================
+
+calls_this_shift = len(today_df)
 
 
 # ====================================================
-# AVERAGE CALLS PER DAY
+# CURRENT SHIFT
 # ====================================================
 
-average_calls_per_day = (
-    df.groupby(
-        df["Date"].dt.date
+if len(today_df) > 0:
+
+    # Sort by date so the most recent call is last
+    today_df = today_df.sort_values(
+        "Date"
     )
-    .size()
-    .mean()
-)
 
-average_calls_per_day = round(
-    average_calls_per_day,
-    1
-)
+    current_shift = today_df.iloc[-1]["Shift"]
+
+else:
+
+    current_shift = "—"
 
 
 # ====================================================
-# DIFFERENCE FROM DAILY AVERAGE
+# PATIENTS CONVEYED
 # ====================================================
 
-calls_difference = round(
-    calls_today - average_calls_per_day
-)
-
-
-# ====================================================
-# PATIENTS CONVEYED TODAY
-# ====================================================
-
-patients_conveyed_today = (
+patients_conveyed = (
     today_df[
         "If not conveyed, what was the reason?"
     ]
@@ -78,16 +73,11 @@ patients_conveyed_today = (
 
 
 # ====================================================
-# OTHER STATISTICS
+# AVERAGE DURATION
 # ====================================================
 
 average_duration = round(
     df["Call Duration"].mean(),
-    1
-)
-
-average_difficulty = round(
-    df["How difficult was this call?"].mean(),
     1
 )
 
@@ -111,53 +101,38 @@ col1, col2, col3, col4 = st.columns(4)
 
 
 # ----------------------------------------------------
-# Calls Today
+# Calls This Shift
 # ----------------------------------------------------
 
 with col1:
 
     st.metric(
-        "Calls Today",
-        calls_today
+        "Calls This Shift",
+        calls_this_shift
     )
-
-    if calls_difference > 0:
-
-        st.markdown(
-            f"<small style='color:red;'>"
-            f"▲ {calls_difference} above daily average"
-            f"</small>",
-            unsafe_allow_html=True
-        )
-
-    elif calls_difference < 0:
-
-        st.markdown(
-            f"<small style='color:green;'>"
-            f"▼ {abs(calls_difference)} below daily average"
-            f"</small>",
-            unsafe_allow_html=True
-        )
-
-    else:
-
-        st.markdown(
-            "<small>"
-            "Exactly at daily average"
-            "</small>",
-            unsafe_allow_html=True
-        )
 
 
 # ----------------------------------------------------
-# Patients Conveyed Today
+# Shift
 # ----------------------------------------------------
 
 with col2:
 
     st.metric(
-        "Patients Conveyed Today",
-        patients_conveyed_today
+        "Shift",
+        current_shift
+    )
+
+
+# ----------------------------------------------------
+# Patients Conveyed
+# ----------------------------------------------------
+
+with col3:
+
+    st.metric(
+        "Patients Conveyed",
+        patients_conveyed
     )
 
 
@@ -165,23 +140,11 @@ with col2:
 # Average Duration
 # ----------------------------------------------------
 
-with col3:
+with col4:
 
     st.metric(
         "Average Duration",
         f"{average_duration} mins"
-    )
-
-
-# ----------------------------------------------------
-# Average Difficulty
-# ----------------------------------------------------
-
-with col4:
-
-    st.metric(
-        "Average Difficulty",
-        f"{average_difficulty}/5"
     )
 
 
